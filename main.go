@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"embed"
 	"fmt"
 	"image"
@@ -11,8 +12,6 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
-	"golang.org/x/image/font"
-	"golang.org/x/image/font/opentype"
 )
 
 const (
@@ -45,27 +44,23 @@ type Vector struct {
 
 var scoreFont = mustLoadFont("assets/fonts/InputMono-Regular.ttf")
 
-func mustLoadFont(name string) font.Face {
+func mustLoadFont(name string) *text.GoTextFace {
 	f, err := assets.ReadFile(name)
 	if err != nil {
 		panic(err)
 	}
 
-	tt, err := opentype.Parse(f)
+	t, err := text.NewGoTextFaceSource(bytes.NewReader(f))
 	if err != nil {
 		panic(err)
 	}
 
-	face, err := opentype.NewFace(tt, &opentype.FaceOptions{
-		Size:    48,
-		DPI:     72,
-		Hinting: font.HintingVertical,
-	})
-	if err != nil {
-		panic(err)
+	s := &text.GoTextFace{
+		Source: t,
+		Size:   48,
 	}
 
-	return face
+	return s
 }
 
 type Timer struct {
@@ -297,8 +292,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	g.player.Draw(screen)
 
 	to := &text.DrawOptions{}
-	to.GeoM.Translate(screenWidth/2-100, 50)
+	to.GeoM.Translate(screenWidth/2-100, 20)
 	to.ColorScale.ScaleWithColor(color.White)
+
 	text.Draw(screen, fmt.Sprintf("%06d", g.score), scoreFont, to)
 }
 
