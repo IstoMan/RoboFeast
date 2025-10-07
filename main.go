@@ -37,15 +37,23 @@ func mustLoadImage(name string) *ebiten.Image {
 	return ebiten.NewImageFromImage(img)
 }
 
+var healthIcon = Sprite{
+	Img:      mustLoadImage("assets/images/heart-icon.png"),
+	Position: Vector{10, 20},
+}
+
 type Vector struct {
 	X float64
 	Y float64
 }
 
-var scoreFont = mustLoadFont("assets/fonts/InputMono-Regular.ttf")
+var (
+	scoreFont  = mustLoadFont("assets/fonts/InputMono-Regular.ttf", 48)
+	healthFont = mustLoadFont("assets/fonts/VictorMono-Italic.ttf", 32)
+)
 
-func mustLoadFont(name string) *text.GoTextFace {
-	f, err := assets.ReadFile(name)
+func mustLoadFont(filePath string, fontSize float64) *text.GoTextFace {
+	f, err := assets.ReadFile(filePath)
 	if err != nil {
 		panic(err)
 	}
@@ -57,7 +65,7 @@ func mustLoadFont(name string) *text.GoTextFace {
 
 	s := &text.GoTextFace{
 		Source: t,
-		Size:   48,
+		Size:   fontSize,
 	}
 
 	return s
@@ -142,11 +150,11 @@ func initPlayer() *Player {
 	}
 
 	return &Player{
-		&Sprite{
+		Sprite: &Sprite{
 			Img:      playerSprite,
 			Position: pos,
 		},
-		3,
+		Lives: 3,
 	}
 }
 
@@ -173,10 +181,10 @@ func (p *Player) Draw(screen *ebiten.Image) {
 	halfH := float64(bounds.Dy()) / 2
 
 	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Scale(1.5, 1.5)
 	op.GeoM.Translate(-halfW, -halfH)
 	op.GeoM.Translate(halfW, halfH)
 
-	op.GeoM.Scale(1.5, 1.5)
 	op.Filter = ebiten.FilterLinear
 	op.GeoM.Translate(p.Position.X, p.Position.Y)
 
@@ -296,6 +304,18 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	to.ColorScale.ScaleWithColor(color.White)
 
 	text.Draw(screen, fmt.Sprintf("%06d", g.score), scoreFont, to)
+
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Scale(0.03, 0.03)
+	op.GeoM.Translate(healthIcon.Position.X, healthIcon.Position.Y)
+	op.Filter = ebiten.FilterLinear
+
+	ho := &text.DrawOptions{}
+	ho.GeoM.Translate(50, 17)
+	ho.ColorScale.ScaleWithColor(color.RGBA{255, 0, 0, 255})
+
+	text.Draw(screen, fmt.Sprintf("0%d", g.player.Lives), healthFont, ho)
+	screen.DrawImage(healthIcon.Img, op)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
