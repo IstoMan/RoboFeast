@@ -10,7 +10,7 @@ In Superfighter, you control a robot and must catch falling bombs to score point
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/IstoMan/superfighter
+    git clone https://github.com/IstoMan/RoboFeast.git
     ```
 2.  **Navigate to the project directory:**
     ```bash
