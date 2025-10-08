@@ -283,11 +283,20 @@ func (g *Game) Update() error {
 		if f.Collider().Intersects(g.player.Collider()) {
 			g.food = append(g.food[:i], g.food[i+1:]...)
 			g.score++
+		} else if f.Position.Y == screenHeight {
+			g.food = append(g.food[:i], g.food[i+1:]...)
+			g.player.Lives--
 		}
 	}
 
 	for _, f := range g.food {
 		f.Update()
+	}
+
+	if g.player.Lives == 0 {
+		g.player = initPlayer()
+		g.food = nil
+		g.score = 0
 	}
 	return nil
 }
